@@ -1,5 +1,4 @@
 import requests
-import time
 import pandas as pd
 
 crew_contract_address = '0x746db7b1728af413c4e2b98216c6171b2fc9d00e'
@@ -22,7 +21,6 @@ print(f"Retrieving {crew_count} total crew members")
 crew_list = []
 iteration_counter = 0
 for i in range(int(crew_count / 50) + 1):
-    time.sleep(1)
     print(f"Collecting crew {iteration_counter * 50}/{crew_count}")
     multi_asset_request_url = f"https://api.opensea.io/api/v1/assets"
     querystring = {"order_direction": "desc", "offset": f"{iteration_counter * 50}", "limit": "50",
