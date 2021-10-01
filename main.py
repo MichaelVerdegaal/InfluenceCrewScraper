@@ -1,5 +1,6 @@
 import requests
 import pandas as pd
+from collections import ChainMap
 
 # Request of user whether to write the full amount of data or not
 keep_all_input = input("Do you want to write the full data (this includes a lot of OpenSea metadata)? (yes | no )"
@@ -19,9 +20,9 @@ collection_request_url = "https://api.opensea.io/api/v1/collections"
 querystring = {"offset": "0", "limit": "300", "asset_owner": random_crew_owner}
 response = requests.request("GET", collection_request_url, params=querystring)
 crew_count = 0
-for i in response.json():
-    if i['primary_asset_contracts'][0]['name'] == "Influence Crew":
-        crew_count = int(i['stats']['count'])
+for row in response.json():
+    if row['primary_asset_contracts'][0]['name'] == "Influence Crew":
+        crew_count = int(row['stats']['count'])
 print(f"Retrieving {crew_count} total crew members")
 
 # Collect crew members
@@ -45,4 +46,15 @@ df = pd.json_normalize(crew_list)
 if not keep_all:
     df = df.filter(axis=1,
                    items=['id', 'token_id', 'image_original_url', 'name', 'description', 'traits', 'owner.address'])
+    temp = df.to_dict(orient='records')
+    traits = []
+    for row in temp:
+        traits_list_of_dicts = row['traits']
+        trait = {}
+        for j in traits_list_of_dicts:
+            trait[j['trait_type']] = j['value']
+        traits.append(trait)
+    df.pop('traits')
+    traits_df = pd.DataFrame(traits)
+    df = pd.concat([df, traits_df], axis=1)
 df.to_csv("crew.csv")
